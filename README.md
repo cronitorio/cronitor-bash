@@ -30,3 +30,8 @@ If invoking using cron, your crontab entry may look something like
 ## Dependencies
 * curl
 * https://cronitor.io
+
+## Authors
+* [@erchn](https://github.com/erchn)
+* [@asheetz2000](https://github.com/asheetz2000)
+

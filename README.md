@@ -25,7 +25,9 @@ Usage: CRONITOR_ID=<unique monitor id> cronitor [-...] '<command>'"
 `CRONITOR_ID=83a8d6c0 cronitor /path/to/task.sh`
 
 If invoking using cron, your crontab entry may look something like
+
 ```* * * * * CRONITOR_ID=83a8d6c0 cronitor /path/to/task.sh```
+
 
 ## Dependencies
 * curl

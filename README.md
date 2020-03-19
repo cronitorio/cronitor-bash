@@ -22,10 +22,10 @@ Usage: CRONITOR_ID=<unique monitor id> cronitor [-...] '<command>'"
 
 ## Examples
 
-`CRONITOR_ID=83a8d6c0 cronitor 'ls -l | grep foo | cut -f 3 -d " "'`
+`CRONITOR_ID=83a8d6c0 cronitor /path/to/task.sh`
 
 If invoking using cron, your crontab entry may look something like
-`* * * * * CRONITOR_ID=83a8d6c0 cronitor 'ls -l | grep couch | cut -f 3 -d " "'`
+```* * * * * CRONITOR_ID=83a8d6c0 cronitor /path/to/task.sh```
 
 ## Dependencies
 * curl

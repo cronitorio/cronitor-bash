@@ -97,22 +97,17 @@ join() {
   echo "$*"
 }
 urlencode() {
-  data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "$*" "")"
-  echo "${data##/?}"
+  echo "$*" | sed 's/ /%20/g' | sed 's/&/%26/g'
   return 0
 }
 callcronitor() {
   local mode=${1:-run}
-  if [ "$mode" == "fail" -a -n "$2" ]; then
-    shift
-    local failstr="msg=$(urlencode $*)"
-  fi
-  local pingqs=$(join "&" ${auth_arg} ${failstr})
-
+  shift
+  local stdout="msg=$(urlencode $*)"
+  local pingqs=$(join "&" ${auth_arg} ${stdout})
+  local proto=$'\nHost: cronitor.link\n'
   while [ $((curlcount--)) -gt 0 ]; do
-    local url=cronitor.link/$CRONITOR_ID/$mode?$pingqs
-    url=${url:0:553}
-    curl -m$timeout -s --insecure $proto://$url
+    echo "GET /$CRONITOR_ID/$mode?$pingqs HTTP/1.1$proto" | openssl s_client -connect cronitor.link:443
     local e=$?
     [ $e -eq 6 ] && continue
     [ $e -eq 7 ] && continue
@@ -124,17 +119,17 @@ callcronitor() {
 }
 
 # sleep skew
-sleep $sleep
+# sleep $sleep
 
 # begin
 callcronitor
-time1=$(date +%s%3N)
+time1=$(date +%s)
 
 cmd="$@"
 output=$(bash -c "$@")
 E=$?
 
-time2=$(date +%s%3N)
+time2=$(date +%s)
 timef=$(($time2 - $time1))
 
 # does this task use the retry wrapper?
@@ -142,10 +137,9 @@ retry=$(echo $cmd | grep -o retry.sh)
 
 if [ $E -ne 0 ]; then
   mode="fail"
-  fail_str="$output"
 fi
 
-callcronitor ${mode:-complete} ${fail_str}
+callcronitor ${mode:-complete} ${output}
 
 if [ -z "$silentlog" ]; then
   logger -t cronitor "TaskID=$CRONITOR_ID, ExitStatus=$E, ElapsedTimeMS=$timef, Command=$cmd"

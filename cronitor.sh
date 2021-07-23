@@ -132,9 +132,6 @@ E=$?
 time2=$(date +%s)
 timef=$(($time2 - $time1))
 
-# does this task use the retry wrapper?
-retry=$(echo $cmd | grep -o retry.sh)
-
 if [ $E -ne 0 ]; then
   mode="fail"
 fi

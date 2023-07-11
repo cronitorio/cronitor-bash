@@ -18,6 +18,7 @@ Usage: CRONITOR_ID=<unique monitor id> cronitor [-...] '<command>'"
            -e: do not sleep a few random seconds at start, reduce spikes locally and at Cronitor
            -o: only try curl commands once, even on retryable failures (6, 7, 28, 35), default 3 times
            -t: curl timeout in seconds; default 10
+           -E: environment flag to pass to Cronitor
 ```
 
 ## Examples

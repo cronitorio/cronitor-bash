@@ -41,6 +41,7 @@ usage() {
            -e: do not sleep a few random seconds at start, reduce spikes locally and at Cronitor
            -o: only try curl commands once, even on retryable failures (6, 7, 28, 35), default 3 times
            -t: curl timeout in seconds; default 10
+           -E: Environment flag to pass to Cronitor
 EOF
   exit 1
 }
@@ -50,7 +51,7 @@ timeout=10
 sleep=$[ ( $RANDOM % 10 )  + 1 ]
 curlcount=3
 
-while getopts ":i:sSpt:eoa:" opt; do
+while getopts ":i:sSpt:eoa:E:" opt; do
   case $opt in
     i)
       id=$OPTARG
@@ -75,6 +76,9 @@ while getopts ":i:sSpt:eoa:" opt; do
       ;;
     t)
       timeout=$OPTARG
+      ;;
+    E)
+      environment=$OPTARG
       ;;
     :)
       echo "Option -$OPTARG requires an argument." >&2
@@ -103,11 +107,15 @@ urlencode() {
 }
 callcronitor() {
   local mode=${1:-run}
+  if [ -n "$environment" ]; then
+    local envstr="env=$environment"
+  fi
   if [ "$mode" == "fail" -a -n "$2" ]; then
     shift
     local failstr="msg=$(urlencode $*)"
   fi
-  local pingqs=$(join "&" ${auth_arg} ${failstr})
+
+  local pingqs=$(join "&" ${auth_arg} ${envstr} ${failstr})
 
   while [ $((curlcount--)) -gt 0 ]; do
     local url=cronitor.link/$CRONITOR_ID/$mode?$pingqs

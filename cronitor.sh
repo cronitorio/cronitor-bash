@@ -34,12 +34,13 @@ usage() {
   $0 [-a][-s][-S] [-i cronitor_id] [-n] [-p] [-t 8] [-e] [-o]
   echo "Usage: CRONITOR_ID=<your cronitor id> cronitor [-...] '<command>'"
            or: cronitor -i <your cronitor id> [-...] 'command'
+           -E: environment
            -a: auth key to send for all monitor actions
            -s: suppresses output to logger command
            -S: suppresses stdout from command
            -p: disable ssl in favor of plain-text
            -e: do not sleep a few random seconds at start, reduce spikes locally and at Cronitor
-           -o: only try curl commands once, even on retryable failures (6, 7, 28, 35), default 3 times
+           -o: only try curl commands once, even on retryable failures (6, 7, 28, 35); default 3 times
            -t: curl timeout in seconds; default 10
 EOF
   exit 1
@@ -50,10 +51,14 @@ timeout=10
 sleep=$[ ( $RANDOM % 10 )  + 1 ]
 curlcount=3
 
-while getopts ":i:sSpt:eoa:" opt; do
+while getopts ":i:sSpt:eoa:E:" opt; do
   case $opt in
     i)
       id=$OPTARG
+      ;;
+
+    E)
+      environment=$OPTARG
       ;;
     a)
       auth=$OPTARG
@@ -103,11 +108,14 @@ urlencode() {
 }
 callcronitor() {
   local mode=${1:-run}
+  if [ -n "$environment" ]; then
+    local envstr="env=$environment"
+  fi
   if [ "$mode" == "fail" -a -n "$2" ]; then
     shift
     local failstr="msg=$(urlencode $*)"
   fi
-  local pingqs=$(join "&" ${auth_arg} ${failstr})
+  local pingqs=$(join "&" ${auth_arg} ${envstr} ${failstr})
 
   while [ $((curlcount--)) -gt 0 ]; do
     local url=cronitor.link/$CRONITOR_ID/$mode?$pingqs

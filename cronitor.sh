@@ -56,7 +56,6 @@ while getopts ":i:sSpt:eoa:E:" opt; do
     i)
       id=$OPTARG
       ;;
-
     E)
       environment=$OPTARG
       ;;
